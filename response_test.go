@@ -2,7 +2,6 @@ package response_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/dcstack/response"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -86,7 +85,6 @@ func (suite *ResponseTestSuite) TestSuccessfulResult() {
 func (suite *ResponseTestSuite) TestCustomRenderer() {
 	resp := response.New().SetRenderer(new(PrettyJsonRenderer))
 	result := resp.Output()
-	fmt.Print(result)
 	expectedResult := `{
     "success": false,
     "status_code": 500,
