@@ -100,7 +100,7 @@ func (suite *ResponseTestSuite) TestJsonRenderFailure() {
 		recover()
 	}()
 	resp := response.New()
-	resp.SetResult(http.StatusOK, make(map[int]int))
+	resp.SetResult(http.StatusOK, func() {})
 	resp.Output()
 	suite.T().Error("JsonRenderer should fail with content that can not be serialized to JSON")
 }
