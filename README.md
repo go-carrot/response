@@ -47,9 +47,6 @@ func (c *MyController) SomeFunction() error {
 }
 ```
 
-In the event you set a custom Renderer that outputs JSON
-
-
 ## Custom Renderer
 
 A Renderer is effectively the piece that defines how we generate the output.  Response is not built against any specific framework/router, so you're actually going to have to build out a custom renderer to fit your setup.
@@ -83,4 +80,28 @@ You will have to set the Renderer before calling `Output()` on the response.  It
 
 ```go
 resp := response.New().SetRenderer(new(PrettyJsonRenderer))
+```
+
+## Custom Errors
+
+In our output interface, we have a `error_details` array.  This is the place where we're to put additional details about a specific error that aren't fully explained with HTTP status codes.  This array is intended to be both human and machine readable, so each error detail has both a code and text.
+
+To be able to call `AddErrorDetail(...)` on a response, you must first register error codes to this library.  You can accomplish this by calling `SetErrorMap`, which takes a `map[int]string`.
+
+```go
+const (
+    ErrorMissingAuth      = 1
+    ErrorMissingParameter = 2
+)
+myErrors := map[int]string{
+    ErrorMissingAuth:      "Missing Auth",
+    ErrorMissingParameter: "Missing Parameter",
+}
+response.SetErrorMap(myErrors)
+```
+
+Now that we've registered all of our errors, we can simply call `AddErrorDetail` on our responses:
+
+```
+resp.AddErrorDetail(ErrorMissingAuth)
 ```
