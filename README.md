@@ -37,7 +37,7 @@ func (c *MyController) SomeFunction() error {
     // Some API logic...
 
     if err != nil {
-        resp.setResult(http.StatusBadRequest)
+        resp.setResult(http.StatusBadRequest, nil)
         resp.AddErrorDetail(errors.MissingSlugParameter)
         return err
     } else {
