@@ -105,3 +105,7 @@ Now that we've registered all of our errors, we can simply call `AddErrorDetail`
 ```
 resp.AddErrorDetail(ErrorMissingAuth)
 ```
+
+## License
+
+[MIT](LICENSE.md)
