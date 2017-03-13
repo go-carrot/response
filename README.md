@@ -8,17 +8,14 @@ Response is a library that flexibly generates output that follows [carrot/restfu
 
 Following [carrot/restful-api-spec](https://github.com/carrot/restful-api-spec), the output conforms to this structure (doesn't have to be JSON):
 
-```json
+```javascript
 {
-    "success": true,
-    "status_code": 200,
-    "status_text": "OK",
-    "error_details": [
-        {
-            "code": 1,
-            "text": "Invalid email"
-        }
-    ],
+    "meta"{
+        "success": true,
+        "status_code": 200,
+        "status_text": "OK",
+        "error_details": "Invalid email"
+    }
     "content": {
         // ...
     }
@@ -38,7 +35,7 @@ func (c *MyController) SomeFunction() error {
 
     if err != nil {
         resp.setResult(http.StatusBadRequest, nil)
-        resp.AddErrorDetail(errors.MissingSlugParameter)
+        resp.SetErrorDetails("Missing slug parameter")
         return err
     } else {
         resp.SetResult(http.StatusOK, myContent)
@@ -80,30 +77,6 @@ You will have to set the Renderer before calling `Output()` on the response.  It
 
 ```go
 resp := response.New().SetRenderer(new(PrettyJsonRenderer))
-```
-
-## Custom Errors
-
-In our output interface, we have a `error_details` array.  This is the place where we're to put additional details about a specific error that aren't fully explained with HTTP status codes.  This array is intended to be both human and machine readable, so each error detail has both a code and text.
-
-To be able to call `AddErrorDetail(...)` on a response, you must first register error codes to this library.  You can accomplish this by calling `SetErrorMap`, which takes a `map[int]string`.
-
-```go
-const (
-    ErrorMissingAuth      = 1
-    ErrorMissingParameter = 2
-)
-myErrors := map[int]string{
-    ErrorMissingAuth:      "Missing Auth",
-    ErrorMissingParameter: "Missing Parameter",
-}
-response.SetErrorMap(myErrors)
-```
-
-Now that we've registered all of our errors, we can simply call `AddErrorDetail` on our responses:
-
-```
-resp.AddErrorDetail(ErrorMissingAuth)
 ```
 
 ## License

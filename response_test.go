@@ -28,41 +28,17 @@ type ResponseTestSuite struct {
 	suite.Suite
 }
 
-func (suite *ResponseTestSuite) SetupTest() {
-	myErrors := map[int]string{
-		ErrorMissingAuth:      "Missing Auth",
-		ErrorMissingParameter: "Missing Parameter",
-	}
-	response.SetErrorMap(myErrors)
-}
-
 func (suite *ResponseTestSuite) TestResponseNotSet() {
 	resp := response.New()
 	result := resp.Output()
-	assert.Equal(suite.T(), "{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":null,\"content\":null}", result)
+	assert.Equal(suite.T(), "{\"meta\":{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":\"\"},\"content\":null}", result)
 }
 
 func (suite *ResponseTestSuite) TestResponseSingleDetail() {
 	resp := response.New()
-	resp.AddErrorDetail(1)
+	resp.SetErrorDetails("Missing Auth")
 	result := resp.Output()
-	assert.Equal(suite.T(), "{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":[{\"code\":1,\"text\":\"Missing Auth\"}],\"content\":null}", result)
-}
-
-func (suite *ResponseTestSuite) TestResponseMultipleDetails() {
-	resp := response.New()
-	resp.AddErrorDetail(ErrorMissingAuth, ErrorMissingParameter)
-	result := resp.Output()
-	assert.Equal(suite.T(), "{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":[{\"code\":1,\"text\":\"Missing Auth\"},{\"code\":2,\"text\":\"Missing Parameter\"}],\"content\":null}", result)
-}
-
-func (suite *ResponseTestSuite) TestInvalidErrorDetailCode() {
-	defer func() {
-		recover()
-	}()
-	resp := response.New()
-	resp.AddErrorDetail(3)
-	suite.T().Error("AddErrorDetail should fail with an invalid error code")
+	assert.Equal(suite.T(), "{\"meta\":{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":\"Missing Auth\"},\"content\":null}", result)
 }
 
 type DummyResult struct {
@@ -79,17 +55,19 @@ func (suite *ResponseTestSuite) TestSuccessfulResult() {
 		},
 	)
 	result := resp.Output()
-	assert.Equal(suite.T(), "{\"success\":true,\"status_code\":200,\"status_text\":\"OK\",\"error_details\":null,\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
+	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"OK\",\"error_details\":\"\"},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
 }
 
 func (suite *ResponseTestSuite) TestCustomRenderer() {
 	resp := response.New().SetRenderer(new(PrettyJsonRenderer))
 	result := resp.Output()
 	expectedResult := `{
-    "success": false,
-    "status_code": 500,
-    "status_text": "Internal Server Error",
-    "error_details": null,
+    "meta": {
+        "success": false,
+        "status_code": 500,
+        "status_text": "Internal Server Error",
+        "error_details": ""
+    },
     "content": null
 }`
 	assert.Equal(suite.T(), expectedResult, result)
