@@ -4,21 +4,26 @@ import (
 	"net/http"
 )
 
+type Meta struct {
+	Success      bool   `json:"success"`
+	StatusCode   int    `json:"status_code"`
+	StatusText   string `json:"status_text"`
+	ErrorDetails string `json:"error_details"`
+}
+
 type Response struct {
-	Renderer     Renderer      `json:"-"`
-	Success      bool          `json:"success"`
-	StatusCode   int           `json:"status_code"`
-	StatusText   string        `json:"status_text"`
-	ErrorDetails []ErrorDetail `json:"error_details"`
-	Content      interface{}   `json:"content"`
+	Renderer Renderer    `json:"-"`
+	Meta     Meta        `json:"meta"`
+	Content  interface{} `json:"content"`
 }
 
 // New instantiates a new Response struct
 func New() *Response {
 	r := new(Response)
 	r.Renderer = new(JsonRenderer)
-	r.Success = false
-	r.StatusCode = http.StatusInternalServerError
+	r.Meta = Meta{}
+	r.Meta.Success = false
+	r.Meta.StatusCode = http.StatusInternalServerError
 	return r
 }
 
@@ -29,25 +34,23 @@ func (r *Response) SetRenderer(renderer Renderer) *Response {
 }
 
 // AddErrorDetail appends an error to the response via an Error Code.
-func (r *Response) AddErrorDetail(codes ...int) *Response {
-	for _, code := range codes {
-		r.ErrorDetails = append(r.ErrorDetails, ErrorDetail{code, ErrorDetailText(code)})
-	}
+func (r *Response) SetErrorDetails(errorDetails string) *Response {
+	r.Meta.ErrorDetails = errorDetails
 	return r
 }
 
 // SetResult sets the result status code and content.
 func (r *Response) SetResult(httpStatusCode int, content interface{}) *Response {
-	r.StatusCode = httpStatusCode
+	r.Meta.StatusCode = httpStatusCode
 	r.Content = content
 	return r
 }
 
 // Output sets the appropriate status and passes it to the Renderer to render
 func (r *Response) Output() string {
-	if r.StatusCode >= 200 && r.StatusCode < 300 {
-		r.Success = true
+	if r.Meta.StatusCode >= 200 && r.Meta.StatusCode < 300 {
+		r.Meta.Success = true
 	}
-	r.StatusText = http.StatusText(r.StatusCode)
+	r.Meta.StatusText = http.StatusText(r.Meta.StatusCode)
 	return r.Renderer.Render(r)
 }
