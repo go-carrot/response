@@ -2,7 +2,7 @@ package response_test
 
 import (
 	"encoding/json"
-	"github.com/dcstack/response"
+	"github.com/go-carrot/response"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"net/http"
