@@ -10,15 +10,15 @@ Following [carrot/restful-api-spec](https://github.com/carrot/restful-api-spec),
 
 ```javascript
 {
-    "meta"{
-        "success": true,
-        "status_code": 200,
-        "status_text": "OK",
-        "error_details": "Invalid email"
-    }
-    "content": {
-        // ...
-    }
+  "meta": {
+    "success": true,
+    "status_code": 200,
+    "status_text": "OK",
+    "error_details": "Invalid email"
+  },
+  "content": {
+    // ...
+  }
 }
 ```
 
