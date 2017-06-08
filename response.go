@@ -8,7 +8,7 @@ type Meta struct {
 	Success      bool   `json:"success"`
 	StatusCode   int    `json:"status_code"`
 	StatusText   string `json:"status_text"`
-	ErrorDetails string `json:"error_details"`
+	ErrorDetails *string `json:"error_details"`
 }
 
 type Response struct {
@@ -36,7 +36,7 @@ func (r *Response) SetRenderer(renderer Renderer) *Response {
 
 // AddErrorDetail appends an error to the response via an Error Code.
 func (r *Response) SetErrorDetails(errorDetails string) *Response {
-	r.Meta.ErrorDetails = errorDetails
+	r.Meta.ErrorDetails = &errorDetails
 	return r
 }
 
