@@ -58,6 +58,18 @@ func (suite *ResponseTestSuite) TestSuccessfulResult() {
 	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"OK\",\"error_details\":\"\"},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
 }
 
+func (suite *ResponseTestSuite) TestSuccessfulResultWithStatusText() {
+	resp := response.New()
+	resp.SetResultWithStatusText(http.StatusOK, "Status OK",
+		&DummyResult{
+			Value1: "Hello World",
+			Value2: "Wow",
+		},
+	)
+	result := resp.Output()
+	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"Status OK\",\"error_details\":\"\"},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
+}
+
 func (suite *ResponseTestSuite) TestCustomRenderer() {
 	resp := response.New().SetRenderer(new(PrettyJsonRenderer))
 	result := resp.Output()
