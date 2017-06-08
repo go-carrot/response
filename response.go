@@ -24,6 +24,7 @@ func New() *Response {
 	r.Meta = Meta{}
 	r.Meta.Success = false
 	r.Meta.StatusCode = http.StatusInternalServerError
+	r.Meta.StatusText = http.StatusText(http.StatusInternalServerError)
 	return r
 }
 
@@ -42,6 +43,15 @@ func (r *Response) SetErrorDetails(errorDetails string) *Response {
 // SetResult sets the result status code and content.
 func (r *Response) SetResult(httpStatusCode int, content interface{}) *Response {
 	r.Meta.StatusCode = httpStatusCode
+	r.Meta.StatusText = http.StatusText(httpStatusCode)
+	r.Content = content
+	return r
+}
+
+// SetResultWithStatusText sets the result status code, status text, and content.
+func (r *Response) SetResultWithStatusText(httpStatusCode int, statusText string, content interface{}) *Response {
+	r.Meta.StatusCode = httpStatusCode
+	r.Meta.StatusText = statusText
 	r.Content = content
 	return r
 }
@@ -51,6 +61,5 @@ func (r *Response) Output() string {
 	if r.Meta.StatusCode >= 200 && r.Meta.StatusCode < 300 {
 		r.Meta.Success = true
 	}
-	r.Meta.StatusText = http.StatusText(r.Meta.StatusCode)
 	return r.Renderer.Render(r)
 }
