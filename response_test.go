@@ -31,7 +31,7 @@ type ResponseTestSuite struct {
 func (suite *ResponseTestSuite) TestResponseNotSet() {
 	resp := response.New()
 	result := resp.Output()
-	assert.Equal(suite.T(), "{\"meta\":{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":\"\"},\"content\":null}", result)
+	assert.Equal(suite.T(), "{\"meta\":{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":null},\"content\":null}", result)
 }
 
 func (suite *ResponseTestSuite) TestResponseSingleDetail() {
@@ -55,7 +55,7 @@ func (suite *ResponseTestSuite) TestSuccessfulResult() {
 		},
 	)
 	result := resp.Output()
-	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"OK\",\"error_details\":\"\"},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
+	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"OK\",\"error_details\":null},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
 }
 
 func (suite *ResponseTestSuite) TestSuccessfulResultWithStatusText() {
@@ -67,7 +67,7 @@ func (suite *ResponseTestSuite) TestSuccessfulResultWithStatusText() {
 		},
 	)
 	result := resp.Output()
-	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"Status OK\",\"error_details\":\"\"},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
+	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"Status OK\",\"error_details\":null},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
 }
 
 func (suite *ResponseTestSuite) TestCustomRenderer() {
@@ -78,7 +78,7 @@ func (suite *ResponseTestSuite) TestCustomRenderer() {
         "success": false,
         "status_code": 500,
         "status_text": "Internal Server Error",
-        "error_details": ""
+        "error_details": null
     },
     "content": null
 }`
