@@ -1,102 +1,84 @@
 package response_test
 
 import (
-	"encoding/json"
-	"github.com/go-carrot/response"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
+
+	"github.com/go-carrot/response"
+	"github.com/stretchr/testify/assert"
 )
-
-const (
-	ErrorMissingAuth      = 1
-	ErrorMissingParameter = 2
-)
-
-type PrettyJsonRenderer int
-
-func (r *PrettyJsonRenderer) Render(resp *response.Response) string {
-	b, err := json.MarshalIndent(resp, "", "    ")
-	if err != nil {
-		panic("Unable to json.Marshal our Response")
-	}
-	return string(b)
-}
-
-type ResponseTestSuite struct {
-	suite.Suite
-}
-
-func (suite *ResponseTestSuite) TestResponseNotSet() {
-	resp := response.New()
-	result := resp.Output()
-	assert.Equal(suite.T(), "{\"meta\":{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":null},\"content\":null}", result)
-}
-
-func (suite *ResponseTestSuite) TestResponseSingleDetail() {
-	resp := response.New()
-	resp.SetErrorDetails("Missing Auth")
-	result := resp.Output()
-	assert.Equal(suite.T(), "{\"meta\":{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":\"Missing Auth\"},\"content\":null}", result)
-}
 
 type DummyResult struct {
 	Value1 string
 	Value2 string
 }
 
-func (suite *ResponseTestSuite) TestSuccessfulResult() {
-	resp := response.New()
+type StackWriter struct {
+	HeaderInt int
+	Stack     []string
+}
+
+func (sw *StackWriter) Write(p []byte) (n int, err error) {
+	sw.Stack = append(sw.Stack, string(p))
+	return 0, nil
+}
+
+func (sw *StackWriter) WriteHeader(header int) {
+	sw.HeaderInt = header
+}
+
+func (sw *StackWriter) Header() http.Header {
+	return make(http.Header, 0)
+}
+
+func (sw *StackWriter) Peek() string {
+	if len(sw.Stack) > 0 {
+		return sw.Stack[len(sw.Stack)-1]
+	}
+	return ""
+}
+
+func TestResponseNotSet(t *testing.T) {
+	sw := new(StackWriter)
+	resp := response.New(sw)
+
+	resp.Output()
+	assert.Equal(t, "{\"meta\":{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":null},\"content\":null}", sw.Peek())
+}
+
+func TestResponseSingleDetail(t *testing.T) {
+	sw := new(StackWriter)
+	resp := response.New(sw)
+
+	resp.SetErrorDetails("Missing Auth")
+	resp.Output()
+	assert.Equal(t, sw.HeaderInt, 500)
+	assert.Equal(t, "{\"meta\":{\"success\":false,\"status_code\":500,\"status_text\":\"Internal Server Error\",\"error_details\":\"Missing Auth\"},\"content\":null}", sw.Peek())
+}
+
+func TestSuccessfulResult(t *testing.T) {
+	sw := new(StackWriter)
+	resp := response.New(sw)
+
 	resp.SetResult(http.StatusOK,
 		&DummyResult{
 			Value1: "Hello World",
 			Value2: "Wow",
 		},
 	)
-	result := resp.Output()
-	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"OK\",\"error_details\":null},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
+	resp.Output()
+	assert.Equal(t, sw.HeaderInt, 200)
+	assert.Equal(t, "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"OK\",\"error_details\":null},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", sw.Peek())
 }
 
-func (suite *ResponseTestSuite) TestSuccessfulResultWithStatusText() {
-	resp := response.New()
-	resp.SetResultWithStatusText(http.StatusOK, "Status OK",
-		&DummyResult{
-			Value1: "Hello World",
-			Value2: "Wow",
-		},
-	)
-	result := resp.Output()
-	assert.Equal(suite.T(), "{\"meta\":{\"success\":true,\"status_code\":200,\"status_text\":\"Status OK\",\"error_details\":null},\"content\":{\"Value1\":\"Hello World\",\"Value2\":\"Wow\"}}", result)
-}
-
-func (suite *ResponseTestSuite) TestCustomRenderer() {
-	resp := response.New().SetRenderer(new(PrettyJsonRenderer))
-	result := resp.Output()
-	expectedResult := `{
-    "meta": {
-        "success": false,
-        "status_code": 500,
-        "status_text": "Internal Server Error",
-        "error_details": null
-    },
-    "content": null
-}`
-	assert.Equal(suite.T(), expectedResult, result)
-}
-
-func (suite *ResponseTestSuite) TestJsonRenderFailure() {
+func TestJsonRenderFailure(t *testing.T) {
 	defer func() {
 		recover()
 	}()
-	resp := response.New()
+	sw := new(StackWriter)
+	resp := response.New(sw)
+
 	resp.SetResult(http.StatusOK, func() {})
 	resp.Output()
-	suite.T().Error("JsonRenderer should fail with content that can not be serialized to JSON")
-}
-
-// In order for 'go test' to run this suite, we need to create
-// a normal test function and pass our suite to suite.Run
-func TestResponseTestSuite(t *testing.T) {
-	suite.Run(t, new(ResponseTestSuite))
+	t.Error("JsonRenderer should fail with content that can not be serialized to JSON")
 }
