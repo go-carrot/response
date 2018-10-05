@@ -55,6 +55,7 @@ func (r *Response) Output() {
 	// Write header, if this is a ResponseWriter
 	switch v := r.Writer.(type) {
 	case http.ResponseWriter:
+		v.Header().Set("Content-Type", "application/json")
 		v.WriteHeader(r.Meta.StatusCode)
 	}
 
